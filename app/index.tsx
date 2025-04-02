@@ -25,7 +25,7 @@ TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
 // Note: This does NOT need to be in the global scope and CAN be used in your React components!
 async function registerBackgroundTaskAsync() {
   return BackgroundTask.registerTaskAsync(BACKGROUND_TASK_IDENTIFIER, {
-    minimumInterval: 10,
+    minimumInterval: 15,
   });
 }
 
