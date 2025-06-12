@@ -3,7 +3,7 @@ import * as TaskManager from "expo-task-manager";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Button } from "react-native";
 
-const BACKGROUND_TASK_IDENTIFIER = "background-task";
+const BACKGROUND_TASK_IDENTIFIER = "beto-task";
 
 // Register and create the task so that it is available also when the background task screen
 // (a React component defined later in this example) is not visible.
@@ -47,6 +47,7 @@ export default function BackgroundTaskScreen() {
 
   const checkStatusAsync = async () => {
     const status = await BackgroundTask.getStatusAsync();
+    console.log("status", status);
     setStatus(status);
   };
 
@@ -77,6 +78,10 @@ export default function BackgroundTaskScreen() {
         onPress={toggle}
       />
       <Button title="Check Background Task Status" onPress={checkStatusAsync} />
+      <Button
+        title="Unregister Background Task"
+        onPress={() => BackgroundTask.unregisterTaskAsync("background-task")}
+      />
     </View>
   );
 }
