@@ -1,3 +1,4 @@
+import React from "react";
 import * as BackgroundTask from "expo-background-task";
 import { useEffect, useState, useRef } from "react";
 import {
@@ -10,7 +11,7 @@ import {
   AppStateStatus,
 } from "react-native";
 
-import { initializeBackgroundTask, getFetchedData } from "@/utils";
+import { initializeBackgroundTask, getQuoteHistory, Quote } from "@/utils";
 
 // Declare a variable to store the resolver function
 let resolver: (() => void) | null;
@@ -23,26 +24,16 @@ const promise = new Promise<void>((resolve) => {
 // Pass the promise to the background task, it will wait until the promise resolves
 initializeBackgroundTask(promise);
 
-type BackgroundTaskData = {
-  timestamp: number;
-  data: any;
-};
-
 export default function BackgroundTaskScreen() {
   const [status, setStatus] =
     useState<BackgroundTask.BackgroundTaskStatus | null>(null);
-  const [fetchedData, setFetchedData] = useState<BackgroundTaskData | null>(
-    null
-  );
+  const [quoteHistory, setQuoteHistory] = useState<Quote[]>([]);
   const appState = useRef(AppState.currentState);
 
-  const loadInitialData = async () => {
-    const data = await getFetchedData();
-    if (data) {
-      setFetchedData({
-        timestamp: Date.now(),
-        data,
-      });
+  const loadQuoteHistory = async () => {
+    const history = await getQuoteHistory();
+    if (history) {
+      setQuoteHistory(history);
     }
   };
 
@@ -53,7 +44,7 @@ export default function BackgroundTaskScreen() {
     }
 
     // Load initial data
-    loadInitialData();
+    loadQuoteHistory();
 
     // Subscribe to app state changes
     const appStateSubscription = AppState.addEventListener(
@@ -65,7 +56,7 @@ export default function BackgroundTaskScreen() {
         ) {
           // App has come to the foreground
           console.log("App has come to the foreground!");
-          loadInitialData();
+          loadQuoteHistory();
         }
         appState.current = nextAppState;
       }
@@ -77,6 +68,16 @@ export default function BackgroundTaskScreen() {
     };
   }, []);
 
+  const renderQuote = (quote: Quote, isPrevious: boolean = false) => (
+    <View style={[styles.quoteContainer, isPrevious && styles.previousQuote]}>
+      <Text style={styles.quoteText}>"{quote.q}"</Text>
+      <Text style={styles.authorText}>- {quote.a}</Text>
+      <Text style={styles.timestamp}>
+        {new Date(quote.timestamp).toLocaleString()}
+      </Text>
+    </View>
+  );
+
   return (
     <ScrollView style={styles.screen}>
       <View style={styles.textContainer}>
@@ -86,24 +87,23 @@ export default function BackgroundTaskScreen() {
             {status ? BackgroundTask.BackgroundTaskStatus[status] : null}
           </Text>
         </Text>
-        {fetchedData && (
-          <Text style={styles.timestamp}>
-            Last updated: {new Date(fetchedData.timestamp).toLocaleString()}
-          </Text>
-        )}
       </View>
 
-      <View style={styles.dataContainer}>
-        <Text style={styles.sectionTitle}>Fetched Data:</Text>
-        {fetchedData ? (
-          <View style={styles.dataContent}>
-            <Text style={styles.boldText}>Title:</Text>
-            <Text>{fetchedData.data.title}</Text>
-            <Text style={styles.boldText}>Body:</Text>
-            <Text>{fetchedData.data.body}</Text>
-          </View>
+      <View style={styles.quotesContainer}>
+        <Text style={styles.sectionTitle}>Latest Quote:</Text>
+        {quoteHistory.length > 0 ? (
+          renderQuote(quoteHistory[0])
         ) : (
-          <Text>No data available yet</Text>
+          <Text>No quotes available yet</Text>
+        )}
+
+        {quoteHistory.length > 1 && (
+          <>
+            <Text style={[styles.sectionTitle, styles.previousTitle]}>
+              Previous Quote:
+            </Text>
+            {renderQuote(quoteHistory[1], true)}
+          </>
         )}
       </View>
 
@@ -125,25 +125,42 @@ const styles = StyleSheet.create({
   },
   boldText: {
     fontWeight: "bold",
-    marginTop: 10,
   },
-  dataContainer: {
+  quotesContainer: {
     margin: 10,
-    padding: 15,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
   },
-  dataContent: {
-    marginTop: 5,
+  previousTitle: {
+    marginTop: 20,
+  },
+  quoteContainer: {
+    backgroundColor: "#f5f5f5",
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  previousQuote: {
+    backgroundColor: "#e8e8e8",
+    opacity: 0.8,
+  },
+  quoteText: {
+    fontSize: 16,
+    fontStyle: "italic",
+    marginBottom: 8,
+  },
+  authorText: {
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign: "right",
+    marginBottom: 8,
   },
   timestamp: {
     fontSize: 12,
     color: "#666",
-    marginTop: 5,
+    textAlign: "right",
   },
 });
