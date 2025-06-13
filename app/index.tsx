@@ -1,64 +1,31 @@
 import * as BackgroundTask from "expo-background-task";
-import * as TaskManager from "expo-task-manager";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View, Button } from "react-native";
 
-const BACKGROUND_TASK_IDENTIFIER = "beto-task";
+import { initializeBackgroundTask } from "@/utils";
 
-// Register and create the task so that it is available also when the background task screen
-// (a React component defined later in this example) is not visible.
-// Note: This needs to be called in the global scope, not in a React component.
-TaskManager.defineTask(BACKGROUND_TASK_IDENTIFIER, async () => {
-  try {
-    const now = Date.now();
-    console.log(
-      `Got background task call at date: ${new Date(now).toISOString()}`
-    );
-  } catch (error) {
-    console.error("Failed to execute the background task:", error);
-    return BackgroundTask.BackgroundTaskResult.Failed;
-  }
-  return BackgroundTask.BackgroundTaskResult.Success;
+// Declare a variable to store the resolver function
+let resolver: (() => void) | null;
+
+// Create a promise and store its resolve function for later
+const promise = new Promise<void>((resolve) => {
+  resolver = resolve;
 });
 
-// 2. Register the task at some point in your app by providing the same name
-// Note: This does NOT need to be in the global scope and CAN be used in your React components!
-async function registerBackgroundTaskAsync() {
-  return BackgroundTask.registerTaskAsync(BACKGROUND_TASK_IDENTIFIER, {
-    minimumInterval: 15,
-  });
-}
-
-// 3. (Optional) Unregister tasks by specifying the task name
-// This will cancel any future background task calls that match the given name
-// Note: This does NOT need to be in the global scope and CAN be used in your React components!
-async function unregisterBackgroundTaskAsync() {
-  return BackgroundTask.unregisterTaskAsync(BACKGROUND_TASK_IDENTIFIER);
-}
+// Pass the promise to the background task, it will wait until the promise resolves
+initializeBackgroundTask(promise);
 
 export default function BackgroundTaskScreen() {
-  const [isRegistered, setIsRegistered] = useState<boolean>(false);
   const [status, setStatus] =
     useState<BackgroundTask.BackgroundTaskStatus | null>(null);
 
   useEffect(() => {
-    checkStatusAsync();
-  }, []);
-
-  const checkStatusAsync = async () => {
-    const status = await BackgroundTask.getStatusAsync();
-    console.log("status", status);
-    setStatus(status);
-  };
-
-  const toggle = async () => {
-    if (isRegistered) {
-      await unregisterBackgroundTaskAsync();
-    } else {
-      await registerBackgroundTaskAsync();
+    // Resolve the promise to indicate that the inner app has mounted
+    // This allows initializeBackgroundTask to proceed
+    if (resolver) {
+      resolver();
     }
-    setIsRegistered(!isRegistered);
-  };
+  }, []);
 
   return (
     <View style={styles.screen}>
@@ -71,16 +38,8 @@ export default function BackgroundTaskScreen() {
         </Text>
       </View>
       <Button
-        disabled={status === BackgroundTask.BackgroundTaskStatus.Restricted}
-        title={
-          isRegistered ? "Cancel Background Task" : "Schedule Background Task"
-        }
-        onPress={toggle}
-      />
-      <Button title="Check Background Task Status" onPress={checkStatusAsync} />
-      <Button
-        title="Unregister Background Task"
-        onPress={() => BackgroundTask.unregisterTaskAsync("background-task")}
+        title="Run Background Task (Debug)"
+        onPress={() => BackgroundTask.triggerTaskWorkerForTestingAsync()}
       />
     </View>
   );
