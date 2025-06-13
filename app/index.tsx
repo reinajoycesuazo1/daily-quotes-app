@@ -47,6 +47,7 @@ export default function BackgroundTaskScreen() {
     // Resolve the promise to indicate that the inner app has mounted
     if (resolver) {
       resolver();
+      console.log("Resolver called");
     }
 
     // Load initial data
@@ -131,6 +132,7 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     margin: 10,
+    marginTop: 60,
   },
   boldText: {
     fontWeight: "bold",
