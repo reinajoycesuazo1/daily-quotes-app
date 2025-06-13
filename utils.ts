@@ -2,7 +2,7 @@ import * as BackgroundTask from "expo-background-task";
 import * as TaskManager from "expo-task-manager";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const BACKGROUND_TASK_IDENTIFIER = "beto-task";
+const BACKGROUND_TASK_IDENTIFIER = "fetch-quote-task";
 const MINIMUM_INTERVAL = 15;
 const QUOTES_HISTORY_KEY = "@quotes_history";
 const MAX_HISTORY_ITEMS = 10;
@@ -85,7 +85,7 @@ export const initializeBackgroundTask = async (
   // Register the task
   if (!(await TaskManager.isTaskRegisteredAsync(BACKGROUND_TASK_IDENTIFIER))) {
     await BackgroundTask.registerTaskAsync(BACKGROUND_TASK_IDENTIFIER, {
-      // minimumInterval: MINIMUM_INTERVAL,
+      minimumInterval: MINIMUM_INTERVAL,
     });
     console.log(
       `Background task with ID: ${BACKGROUND_TASK_IDENTIFIER} registered`
