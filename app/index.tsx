@@ -64,6 +64,9 @@ export default function BackgroundTaskScreen() {
           console.log("App has come to the foreground!");
           loadQuoteHistory();
         }
+        if (appState.current.match(/active/) && nextAppState === "background") {
+          console.log("App has gone to the background!");
+        }
         appState.current = nextAppState;
       }
     );
