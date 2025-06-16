@@ -78,16 +78,6 @@ export default function BackgroundTaskScreen() {
     };
   }, []);
 
-  const renderQuote = (quote: Quote, isPrevious: boolean = false) => (
-    <View style={[styles.quoteContainer, isPrevious && styles.previousQuote]}>
-      <Text style={styles.quoteText}>"{quote.q}"</Text>
-      <Text style={styles.authorText}>- {quote.a}</Text>
-      <Text style={styles.timestamp}>
-        {new Date(quote.timestamp).toLocaleString()}
-      </Text>
-    </View>
-  );
-
   return (
     <ScrollView style={styles.screen}>
       <View style={styles.textContainer}>
@@ -102,7 +92,13 @@ export default function BackgroundTaskScreen() {
       <View style={styles.quotesContainer}>
         <Text style={styles.sectionTitle}>Latest Quote:</Text>
         {quoteHistory.length > 0 ? (
-          renderQuote(quoteHistory[0])
+          <View style={styles.quoteContainer}>
+            <Text style={styles.quoteText}>"{quoteHistory[0].q}"</Text>
+            <Text style={styles.authorText}>- {quoteHistory[0].a}</Text>
+            <Text style={styles.timestamp}>
+              {new Date(quoteHistory[0].timestamp).toLocaleString()}
+            </Text>
+          </View>
         ) : (
           <Text>No quotes available yet</Text>
         )}
@@ -110,16 +106,32 @@ export default function BackgroundTaskScreen() {
         {quoteHistory.length > 1 && (
           <>
             <Text style={[styles.sectionTitle, styles.previousTitle]}>
-              Previous Quote:
+              Previous Quotes:
             </Text>
-            {renderQuote(quoteHistory[1], true)}
+            {quoteHistory.slice(1).map((quote, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.quoteContainer,
+                  index === 0 && styles.previousQuote,
+                ]}
+              >
+                <Text style={styles.quoteText}>"{quote.q}"</Text>
+                <Text style={styles.authorText}>- {quote.a}</Text>
+                <Text style={styles.timestamp}>
+                  {new Date(quote.timestamp).toLocaleString()}
+                </Text>
+              </View>
+            ))}
           </>
         )}
       </View>
 
       <Button
         title="Run Background Task (Debug)"
-        onPress={() => BackgroundTask.triggerTaskWorkerForTestingAsync()}
+        onPress={async () => {
+          await BackgroundTask.triggerTaskWorkerForTestingAsync();
+        }}
       />
     </ScrollView>
   );
