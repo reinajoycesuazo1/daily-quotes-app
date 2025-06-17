@@ -1,50 +1,45 @@
-# Welcome to your Expo app 👋
+# Daily Quotes App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A simple Expo app that fetches and stores a new daily quote in the background using Expo Background Tasks. When users open the app, they instantly see the most recent quote without waiting for a network request.
 
-## Get started
+## Features
 
-1. Install dependencies
+- Fetches one inspirational quote per day
+- Uses [`expo-background-task`](https://docs.expo.dev/versions/latest/sdk/background-task) to run logic when the app isn't open
+- Stores quotes locally with `AsyncStorage`
+- Works offline after initial sync
+- Compatible with both iOS and Android
 
+## Tech Stack
+
+- [Expo](https://expo.dev/)
+- `expo-background-task`
+- `expo-async-storage`
+- React Native
+
+## How It Works
+
+1. A background task runs when the system allows.
+2. It fetches a new quote from a remote API.
+3. The quote is saved to local storage.
+4. On app launch, the stored quote is shown immediately.
+
+## Setup
+
+1. Clone the repo:
    ```bash
-   npm install
+   git clone https://github.com/your-username/daily-quotes-app.git
    ```
-
-2. Start the app
-
+2. Install deps
    ```bash
-    npx expo start
+   bun install
    ```
+3. Run the app
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+> [!NOTE]
+> For iOS, you must use a physical device as background tasks are not supported in the iOS simulator.
 
 ```bash
-npm run reset-project
+eas build -p ios --profile development
+eas build -p android --profile development
 ```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
