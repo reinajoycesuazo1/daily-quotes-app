@@ -80,14 +80,7 @@ export default function BackgroundTaskScreen() {
 
   return (
     <ScrollView style={styles.screen}>
-      <View style={styles.textContainer}>
-        <Text>
-          Background Task Service Availability:{" "}
-          <Text style={styles.boldText}>
-            {status ? BackgroundTask.BackgroundTaskStatus[status] : null}
-          </Text>
-        </Text>
-      </View>
+      <View style={styles.textContainer}></View>
 
       <View style={styles.quotesContainer}>
         <Text style={styles.sectionTitle}>Latest Quote:</Text>
