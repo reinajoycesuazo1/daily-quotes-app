@@ -1,15 +1,14 @@
-import React from "react";
 import * as BackgroundTask from "expo-background-task";
 import * as TaskManager from "expo-task-manager";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  AppState,
+  AppStateStatus,
+  Button,
+  ScrollView,
   StyleSheet,
   Text,
   View,
-  Button,
-  ScrollView,
-  AppState,
-  AppStateStatus,
 } from "react-native";
 
 // Debugging
@@ -17,7 +16,7 @@ TaskManager.getRegisteredTasksAsync().then((tasks) => {
   console.log(tasks);
 });
 
-import { initializeBackgroundTask, getQuoteHistory, Quote } from "@/utils";
+import { getQuoteHistory, initializeBackgroundTask, Quote } from "@/utils";
 
 // Declare a variable to store the resolver function
 let resolver: (() => void) | null;
