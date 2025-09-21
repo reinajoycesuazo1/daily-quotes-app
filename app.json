@@ -1,23 +1,23 @@
 {
   "expo": {
-    "name": "bg-tasks",
-    "slug": "bg-tasks",
+    "name": "Daily Quotes",
+    "slug": "daily-quotes",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "dailyquotes",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.betoatexpo.bg-tasks"
+      "bundleIdentifier": "com.dailyquotes.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.betoatexpo.bgtasks"
+      "package": "com.dailyquotes.app"
     },
     "web": {
       "bundler": "metro",
@@ -35,9 +35,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-background-task",
-      "expo-font",
-      "expo-web-browser"
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

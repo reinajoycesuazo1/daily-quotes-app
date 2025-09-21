@@ -1,28 +1,29 @@
 # Daily Quotes App
 
-A simple Expo app that fetches and stores a new daily quote in the background using Expo Background Tasks. When users open the app, they instantly see the most recent quote without waiting for a network request.
+A simple and elegant quotes app built with Expo that displays inspirational quotes from ZenQuotes API. Get inspired with beautiful typography and a clean, minimal design.
 
 ## Features
 
-- Fetches one inspirational quote per day
-- Uses [`expo-background-task`](https://docs.expo.dev/versions/latest/sdk/background-task) to run logic when the app isn't open
-- Stores quotes locally with `AsyncStorage`
-- Works offline after initial sync
-- Compatible with both iOS and Android
+- ✨ Beautiful, clean interface
+- 📱 Pull-to-refresh functionality
+- 🎯 One-tap quote refresh
+- 🌐 Fetches quotes from ZenQuotes API
+- 📱 Works on iOS, Android, and Web
+- 🎨 Modern design with shadows and smooth animations
 
 ## Tech Stack
 
 - [Expo](https://expo.dev/)
-- `expo-background-task`
-- `expo-async-storage`
 - React Native
+- TypeScript
+- ZenQuotes API
 
 ## How It Works
 
-1. A background task runs when the system allows.
-2. It fetches a new quote from a remote API.
-3. The quote is saved to local storage.
-4. On app launch, the stored quote is shown immediately.
+1. On app launch, fetches a random inspirational quote
+2. Displays the quote with elegant typography
+3. Users can pull down to refresh or tap "New Quote" button
+4. Each refresh fetches a new random quote from the API
 
 ## Setup
 
@@ -30,16 +31,34 @@ A simple Expo app that fetches and stores a new daily quote in the background us
    ```bash
    git clone https://github.com/your-username/daily-quotes-app.git
    ```
-2. Install deps
+2. Install dependencies:
    ```bash
+   npm install
+   # or
    bun install
    ```
-3. Run the app
+3. Run the app:
+   ```bash
+   npm start
+   # or
+   bun run start
+   ```
 
-> [!NOTE]
-> For iOS, you must use a physical device as background tasks are not supported in the iOS simulator.
+## Usage
 
-```bash
-eas build -p ios --profile development
-eas build -p android --profile development
-```
+- **Pull down** on the screen to refresh and get a new quote
+- **Tap "New Quote"** button to fetch a new inspirational quote
+- The app works offline after the initial load
+
+## Screenshots
+
+The app features:
+- Clean, centered quote display
+- Elegant typography with proper spacing
+- Subtle shadows and modern design
+- Smooth loading states
+- Error handling for network issues
+
+## API
+
+This app uses the [ZenQuotes API](https://zenquotes.io/) to fetch random inspirational quotes.

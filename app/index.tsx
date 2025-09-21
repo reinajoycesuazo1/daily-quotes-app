@@ -1,181 +1,152 @@
-import * as BackgroundTask from "expo-background-task";
-import * as TaskManager from "expo-task-manager";
-import { useEffect, useRef, useState } from "react";
+import React, { useState, useEffect } from 'react';
 import {
-  AppState,
-  AppStateStatus,
-  Button,
-  ScrollView,
   StyleSheet,
   Text,
   View,
-} from "react-native";
+  TouchableOpacity,
+  RefreshControl,
+  ScrollView,
+  Alert,
+} from 'react-native';
+import { getRandomSampleQuote, type Quote } from './quotes-data';
 
-// Debugging
-TaskManager.getRegisteredTasksAsync().then((tasks) => {
-  console.log(tasks);
-});
+export default function QuotesApp() {
+  const [quote, setQuote] = useState<Quote | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [useOfflineMode, setUseOfflineMode] = useState(false);
 
-import { getQuoteHistory, initializeBackgroundTask, Quote } from "@/utils";
+  const fetchQuote = async () => {
+    try {
+      const response = await fetch('https://zenquotes.io/api/random');
+      const quotes: Quote[] = await response.json();
 
-// Declare a variable to store the resolver function
-let resolver: (() => void) | null;
-
-// Create a promise and store its resolve function for later
-const promise = new Promise<void>((resolve) => {
-  resolver = resolve;
-});
-
-// Pass the promise to the background task, it will wait until the promise resolves
-initializeBackgroundTask(promise);
-
-export default function BackgroundTaskScreen() {
-  const [status, setStatus] =
-    useState<BackgroundTask.BackgroundTaskStatus | null>(null);
-  const [quoteHistory, setQuoteHistory] = useState<Quote[]>([]);
-  const appState = useRef(AppState.currentState);
-
-  const loadQuoteHistory = async () => {
-    const history = await getQuoteHistory();
-    if (history) {
-      setQuoteHistory(history);
+      if (quotes && quotes.length > 0) {
+        setQuote(quotes[0]);
+        setUseOfflineMode(false);
+      }
+    } catch (error) {
+      console.error('Error fetching quote:', error);
+      // Fallback to offline quotes when API fails
+      const offlineQuote = getRandomSampleQuote();
+      setQuote(offlineQuote);
+      setUseOfflineMode(true);
+      Alert.alert('Offline Mode', 'Using offline quotes due to network issues.');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  useEffect(() => {
-    // Resolve the promise to indicate that the inner app has mounted
-    if (resolver) {
-      resolver();
-      console.log("Resolver called");
+  const getNewQuote = () => {
+    if (useOfflineMode) {
+      // Always use offline quotes when in offline mode
+      setQuote(getRandomSampleQuote());
+    } else {
+      // Try to fetch from API, fallback to offline if it fails
+      fetchQuote();
     }
+  };
 
-    // Load initial data
-    loadQuoteHistory();
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchQuote();
+  };
 
-    // Subscribe to app state changes
-    const appStateSubscription = AppState.addEventListener(
-      "change",
-      (nextAppState: AppStateStatus) => {
-        if (
-          appState.current.match(/inactive|background/) &&
-          nextAppState === "active"
-        ) {
-          // App has come to the foreground
-          console.log("App has come to the foreground!");
-          loadQuoteHistory();
-        }
-        if (appState.current.match(/active/) && nextAppState === "background") {
-          console.log("App has gone to the background!");
-        }
-        appState.current = nextAppState;
-      }
-    );
-
-    // Cleanup subscription on unmount
-    return () => {
-      appStateSubscription.remove();
-    };
+  useEffect(() => {
+    fetchQuote();
   }, []);
 
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading quote...</Text>
+      </View>
+    );
+  }
+
   return (
-    <ScrollView style={styles.screen}>
-      <View style={styles.textContainer}></View>
-
-      <View style={styles.quotesContainer}>
-        <Text style={styles.sectionTitle}>Latest Quote:</Text>
-        {quoteHistory.length > 0 ? (
-          <View style={styles.quoteContainer}>
-            <Text style={styles.quoteText}>"{quoteHistory[0].q}"</Text>
-            <Text style={styles.authorText}>- {quoteHistory[0].a}</Text>
-            <Text style={styles.timestamp}>
-              {new Date(quoteHistory[0].timestamp).toLocaleString()}
-            </Text>
-          </View>
-        ) : (
-          <Text>No quotes available yet</Text>
-        )}
-
-        {quoteHistory.length > 1 && (
-          <>
-            <Text style={[styles.sectionTitle, styles.previousTitle]}>
-              Previous Quotes:
-            </Text>
-            {quoteHistory.slice(1).map((quote, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.quoteContainer,
-                  index === 0 && styles.previousQuote,
-                ]}
-              >
-                <Text style={styles.quoteText}>"{quote.q}"</Text>
-                <Text style={styles.authorText}>- {quote.a}</Text>
-                <Text style={styles.timestamp}>
-                  {new Date(quote.timestamp).toLocaleString()}
-                </Text>
-              </View>
-            ))}
-          </>
-        )}
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
+      <View style={styles.quoteContainer}>
+        <Text style={styles.quoteText}>
+          "{quote?.q}"
+        </Text>
+        <Text style={styles.authorText}>
+          — {quote?.a}
+        </Text>
       </View>
 
-      <Button
-        title="Run Background Task (Debug)"
-        onPress={async () => {
-          await BackgroundTask.triggerTaskWorkerForTestingAsync();
-        }}
-      />
+      <TouchableOpacity style={styles.button} onPress={fetchQuote}>
+        <Text style={styles.buttonText}>New Quote</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
+  container: {
     flex: 1,
+    backgroundColor: '#f8f9fa',
+  },
+  contentContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
     padding: 20,
   },
-  textContainer: {
-    margin: 10,
-    marginTop: 60,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
   },
-  boldText: {
-    fontWeight: "bold",
-  },
-  quotesContainer: {
-    margin: 10,
-  },
-  sectionTitle: {
+  loadingText: {
     fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-  previousTitle: {
-    marginTop: 20,
+    color: '#666',
   },
   quoteContainer: {
-    backgroundColor: "#f5f5f5",
-    padding: 15,
-    borderRadius: 8,
-    marginBottom: 10,
-  },
-  previousQuote: {
-    backgroundColor: "#e8e8e8",
-    opacity: 0.8,
+    backgroundColor: '#ffffff',
+    padding: 30,
+    borderRadius: 15,
+    marginBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   quoteText: {
-    fontSize: 16,
-    fontStyle: "italic",
-    marginBottom: 8,
+    fontSize: 24,
+    fontStyle: 'italic',
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 32,
   },
   authorText: {
-    fontSize: 14,
-    fontWeight: "500",
-    textAlign: "right",
-    marginBottom: 8,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666',
+    textAlign: 'right',
   },
-  timestamp: {
-    fontSize: 12,
-    color: "#666",
-    textAlign: "right",
+  button: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 30,
+    paddingVertical: 15,
+    borderRadius: 25,
+    alignSelf: 'center',
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
